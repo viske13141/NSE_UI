@@ -1,6 +1,6 @@
 ﻿import { afterEach, describe, expect, it, vi } from 'vitest';
 import fixture from './fixtures/nse-schemes.txt?raw';
-import { getNSESchemeMaster, parseNSESchemeMaster } from './nseSchemeService';
+import { getNSESchemeMaster, getPublicSchemeMaster, parseNSESchemeMaster } from './nseSchemeService';
 import { NSE_TOKEN_KEY } from './nseApi';
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });
 describe('Mutual funds scheme master', () => {
@@ -18,6 +18,30 @@ describe('Mutual funds scheme master', () => {
     vi.stubGlobal('fetch', fetchMock);
     expect(await getNSESchemeMaster()).toHaveLength(3);
     expect(fetchMock).toHaveBeenCalledWith('/nse-api/reports/master-download', expect.objectContaining({ method: 'POST', body: JSON.stringify({ file_type: 'SCH' }), headers: expect.objectContaining({ Authorization: 'Bearer test-token' }) }));
+  });
+  it('loads customer schemes through the FastAPI SSO cookie without an NSE bearer token', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      headers: { get: () => 'text/plain; charset=utf-8' },
+      text: async () => fixture,
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await getPublicSchemeMaster()).toHaveLength(3);
+    expect(fetchMock).toHaveBeenCalledWith('/nse-api/customer/schemes', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'text/plain' },
+    });
+  });
+  it('surfaces FastAPI customer catalogue errors', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: false,
+      status: 401,
+      text: async () => JSON.stringify({ detail: 'Invalid or expired SSO session' }),
+    })));
+    await expect(getPublicSchemeMaster()).rejects.toThrow('Your Mutual Funds SSO session is missing or expired');
   });
   it('disables unavailable transactions and does not infer Direct from NORMAL', () => {
     const lines = fixture.trim().split('\n');

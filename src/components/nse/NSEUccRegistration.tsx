@@ -6,6 +6,7 @@ import { getNSEFieldOptions, type NSECodeOption } from '@/services/nseDocumentMa
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { validateNSEUccDraft } from '@/services/nseUccDraftService';
+import { ArrowLeft } from 'lucide-react';
 
 const groups = [
   { title: 'Holder details', fields: [['client_code', 'Client code', 10], ['primary_holder_first_name', 'First name', 70], ['primary_holder_middle_name', 'Middle name (optional)', 70], ['primary_holder_last_name', 'Last name (optional)', 70], ['gender', 'Gender', 1], ['primary_holder_dob_incorporation', 'Date of birth', 10], ['occupation_code', 'Occupation', 5], ['primary_holder_pan', 'PAN', 10]] },
@@ -41,7 +42,11 @@ const displayValue = (key: string, value: string) => {
   const options = key === 'client_type' ? [['P', 'Physical / non-demat'], ['D', 'Demat']] : getNSEFieldOptions('client', key) || selectOptions[key.replace(/^nominee_[123]_/, 'nominee_1_')];
   return options?.find(([code]) => code === value)?.[1] || (key === 'nomination_authentication' && value === 'V' ? 'Video recording' : value);
 };
-export default function NSEUccRegistration({ onClose, onViewReport }: { onClose: () => void; onViewReport?: () => void }) {
+export default function NSEUccRegistration({ onClose, onViewReport, presentation = 'dialog' }: {
+  onClose: () => void;
+  onViewReport?: () => void;
+  presentation?: 'dialog' | 'page';
+}) {
   const [step, setStep] = useState(0), [review, setReview] = useState(false), [error, setError] = useState('');
   const [values, setValues] = useState<Record<string, string>>({ primary_holder_pan_exempt: 'N', nominee_count: '1', holding_nature: 'SI', client_type: 'P', gender: '', account_type_1: '', primary_holder_kyc_type: '', nomination_opt: '', nomination_authentication: '', nominee_soa: '', communication_mode: '', div_pay_mode: '', paperless_flag: '' });
   const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false), [attempted, setAttempted] = useState(false);
@@ -110,7 +115,7 @@ export default function NSEUccRegistration({ onClose, onViewReport }: { onClose:
     catch { setResult({ state: 'unknown', clientCode: values.client_code, remark: 'Registration confirmation is unavailable. Check the Client Registration Report before submitting again.' }); }
     finally { lock.current = false; setBusy(false); }
   };
-  return <Dialog open onOpenChange={open => { if (!open && !busy) onClose(); }}><DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto" onEscapeKeyDown={event => { if (busy) event.preventDefault(); }} onPointerDownOutside={event => { if (busy) event.preventDefault(); }}><DialogHeader><NSEDialogTitle>Register Mutual funds investor</NSEDialogTitle><DialogDescription>Enter the investor details. Fields marked * are required.</DialogDescription></DialogHeader>
+  const formContent = <>{presentation === 'dialog' && <DialogHeader><NSEDialogTitle>Register Mutual funds investor</NSEDialogTitle><DialogDescription>Enter the investor details. Fields marked * are required.</DialogDescription></DialogHeader>}
     <section aria-label="UCC account profile" className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
       <NSEHeading as="h3" className="text-sm font-semibold text-[#102B78]">Account type</NSEHeading>
       <fieldset disabled={review || busy || attempted || !!result} className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
@@ -162,5 +167,18 @@ export default function NSEUccRegistration({ onClose, onViewReport }: { onClose:
       {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
       <NSEButton disabled={!consent || busy || attempted} onClick={() => void submit()} className="w-full rounded-lg bg-[#102B78] p-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500">{busy ? 'Submitting to Mutual funds...' : 'Submit to Mutual funds'}</NSEButton>
       <NSEButton disabled={busy || attempted} onClick={() => { setReview(false); setConsent(false); }} className="text-sm text-[#102B78]">Edit registration</NSEButton></>}
-  </DialogContent></Dialog>;
+  </>;
+  if (presentation === 'page') return <main className="min-h-screen bg-[#f4f7fc] px-4 py-6 sm:px-6 sm:py-10">
+    <div className="mx-auto w-full max-w-4xl">
+      <header className="mb-6 flex flex-wrap items-center gap-4">
+        <NSEButton disabled={busy} onClick={onClose} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-[#102B78] disabled:opacity-50"><ArrowLeft aria-hidden="true" className="h-4 w-4" />Back to dashboard</NSEButton>
+        <div>
+          <NSEHeading as="h1" className="text-2xl font-bold text-slate-900 sm:text-3xl">Register Mutual funds investor</NSEHeading>
+          <p className="text-sm text-slate-600">Enter the investor details. Fields marked * are required.</p>
+        </div>
+      </header>
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">{formContent}</section>
+    </div>
+  </main>;
+  return <Dialog open onOpenChange={open => { if (!open && !busy) onClose(); }}><DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto" onEscapeKeyDown={event => { if (busy) event.preventDefault(); }} onPointerDownOutside={event => { if (busy) event.preventDefault(); }}>{formContent}</DialogContent></Dialog>;
 }

@@ -1,4 +1,5 @@
-﻿import { nseApi } from './nseApi';
+import { nseApi } from './nseApi';
+import { getNseCustomerSchemeMasterText } from './nseCustomerSso';
 
 export interface NSEScheme {
   id: string;
@@ -34,7 +35,7 @@ export function parseNSESchemeMaster(text: string): NSEScheme[] {
     if (!headers.includes(required)) throw new Error(`Mutual funds scheme master is missing ${required}`);
   }
   const seen = new Set<string>();
-  const schemes = lines.slice(1).map(line => {
+  const schemes = lines.slice(1).map((line): NSEScheme | null => {
     const values = line.split('|');
     if (values.length < headers.length) throw new Error('Mutual funds returned an incomplete scheme master row. Refresh the catalog.');
     const row = Object.fromEntries(headers.map((header, index) => [header, values[index]?.trim() || '']));
@@ -66,4 +67,17 @@ export function parseNSESchemeMaster(text: string): NSEScheme[] {
 }
 export async function getNSESchemeMaster(): Promise<NSEScheme[]> {
   return parseNSESchemeMaster(await nseApi.downloadMaster({ file_type: 'SCH' }));
+}
+
+/**
+ * getPublicSchemeMaster
+ *
+ * Fetches the NSE scheme catalogue through the FastAPI customer route.
+ * The browser sends the existing HttpOnly SSO cookie; NSE credentials remain server-side.
+ *
+ * Use this function in customer-facing pages (e.g. MutualFundsDashboard)
+ * instead of getNSESchemeMaster(), which requires an NSE admin session.
+ */
+export async function getPublicSchemeMaster(): Promise<NSEScheme[]> {
+  return parseNSESchemeMaster(await getNseCustomerSchemeMasterText());
 }

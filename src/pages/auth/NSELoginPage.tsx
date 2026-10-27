@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, Landmark, LockKeyhole, Loader2, UserRound } from 'lucide-react';
 import { loginToNSE } from '@/services/nseAuth';
+import { NSEButton } from '@/components/nse/NSEPresentation';
 
 export default function NSELoginPage({ showOtherOptions = true }: { showOtherOptions?: boolean }) {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function NSELoginPage({ showOtherOptions = true }: { showOtherOpt
     try {
       await loginToNSE(username, password);
       setPassword('');
-      navigate('/mutual-funds/explore-funds', { replace: true });
+      navigate('/nse-dashboard', { replace: true });
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Unable to sign in. Please try again.'); }
     finally { pending.current = false; setBusy(false); }
   };
@@ -40,7 +41,8 @@ export default function NSELoginPage({ showOtherOptions = true }: { showOtherOpt
           {error && <p role="alert" className="rounded-xl border border-rose-100 bg-rose-50 p-3 text-sm leading-6 text-rose-700">{error}</p>}
           <button type="submit" disabled={busy || !username.trim() || !password} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#102B78] px-4 text-sm font-semibold text-white transition hover:bg-[#1B3F96] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 disabled:opacity-50">{busy ? <><Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />Signing in...</> : <>Sign in to Mutual funds<ArrowRight aria-hidden="true" className="h-4 w-4" /></>}</button>
         </form>
-        <p className="mt-8 text-center text-xs leading-6 text-slate-500">Need access? Contact your platform administrator.</p>{showOtherOptions && <Link to="/mf-login" className="mt-3 block text-center text-sm font-medium text-[#102B78] hover:underline">Other mutual fund sign-in options</Link>}
+        <p className="mt-8 text-center text-xs leading-6 text-slate-500">Need access? Contact your platform administrator.</p>
+        <NSEButton type="button" onClick={() => navigate('/investor-registration')} className="mt-3 flex h-12 w-full justify-center rounded-xl border border-[#102B78] bg-white px-4 text-sm font-semibold text-[#102B78] transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100">Register</NSEButton>
       </div>
     </section>
   </main>;

@@ -4,7 +4,9 @@ module.exports = {
   port: process.env.PORT || 5000,
   frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:8081',
   nse: {
-    baseUrl: process.env.NSE_BASE_URL || 'http://165.22.218.229',
+    baseUrl:  process.env.NSE_BASE_URL  || 'http://165.22.218.229',
+    username: process.env.NSE_USERNAME,
+    password: process.env.NSE_PASSWORD,
   },
   kycHub: {
     baseUrl: process.env.KYC_HUB_BASE_URL,

@@ -52,9 +52,9 @@ describe('Mutual funds document navigation', () => {
     expect(screen.getByRole('button', { name: /^User Master$/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Rights Management' })).toBeDisabled();
   });
-  it('opens client registration and FATCA from their document groups', () => {
+  it('routes investor registration outside the dashboard and keeps FATCA in its existing dialog', () => {
     vi.mocked(getNSESchemeMaster).mockResolvedValue([]);
-    render(<MemoryRouter><NSEDashboard /></MemoryRouter>);
+    render(<MemoryRouter><RouteProbe /><NSEDashboard /></MemoryRouter>);
     fireEvent.click(screen.getByRole('button', { name: 'Investor details' }));
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Bank & tax' }), { button: 0, ctrlKey: false });
     fireEvent.click(screen.getByRole('button', { name: 'Tax declaration (FATCA)' }));
@@ -67,9 +67,16 @@ describe('Mutual funds document navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Account & KYC' }), { button: 0, ctrlKey: false });
     fireEvent.click(screen.getByRole('button', { name: 'Register investor' }));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '2. Bank details' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '4. KYC and declarations' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Current dashboard URL')).toHaveTextContent('/investor-registration');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '2. Bank details' })).not.toBeInTheDocument();
+  });
+  it('routes the dashboard header registration action to the standalone page', () => {
+    vi.mocked(getNSESchemeMaster).mockResolvedValue([]);
+    render(<MemoryRouter><RouteProbe /><NSEDashboard /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('button', { name: 'Register Mutual funds investor' }));
+    expect(screen.getByLabelText('Current dashboard URL')).toHaveTextContent('/investor-registration');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
   it('groups reports and opens plan reports in the matching product', () => {
     vi.mocked(getNSESchemeMaster).mockResolvedValue([]);

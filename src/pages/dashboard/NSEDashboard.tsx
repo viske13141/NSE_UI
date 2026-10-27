@@ -19,7 +19,6 @@ import NSEAofReport from '@/components/nse/NSEAofReport';
 import NSEFatcaReport from '@/components/nse/NSEFatcaReport';
 import NSEClientDetail from '@/components/nse/NSEClientDetail';
 import NSEClientAuthorization from '@/components/nse/NSEClientAuthorization';
-import NSEUccRegistration from '@/components/nse/NSEUccRegistration';
 import NSESwitchFlow from '@/components/nse/NSESwitchFlow';
 import NSETransactionReport from '@/components/nse/NSETransactionReport';
 import NSELifecycleReport from '@/components/nse/NSELifecycleReport';
@@ -103,8 +102,7 @@ const NSEDashboard: React.FC = () => {
   const [fatcaOpen, setFatcaOpen] = useState(false);
   const [clientDetailOpen, setClientDetailOpen] = useState(false);
   const [authorizationOpen, setAuthorizationOpen] = useState(false);
-  const [registerInvestorOpen, setRegisterInvestorOpen] = useState(false);
-  const sectionPath = location.pathname.replace(/^\/mutual-funds\/?/, '').replace(/\/$/, '');
+  const sectionPath = location.pathname.replace(/^\/nse-dashboard\/?/, '').replace(/\/$/, '');
   const activeTab: Tab = (Object.entries(SECTION_PATHS).find(([, path]) => path === sectionPath)?.[0] as Tab) || 'clients';
   const [sipTab, setSipTab] = useState(() => new URLSearchParams(location.search).get('view') || 'existing');
   const [xsipTopupPlan, setXsipTopupPlan] = useState<{ id: string; name: string } | undefined>();
@@ -165,7 +163,7 @@ const NSEDashboard: React.FC = () => {
     return [order.id, order.targetScheme ? `${order.fund} → ${order.targetScheme}` : order.fund, order.mode === 'buy' ? 'Purchase' : `Monthly ${order.mode.toUpperCase()}`, money(order.amount), status];
   };
   useEffect(() => {
-    if (!connected) navigate('/mf-login', { replace: true, state: { from: location.pathname + location.search } });
+    if (!connected) navigate('/nse-login', { replace: true, state: { from: location.pathname + location.search } });
   }, [connected, navigate]);
   useEffect(() => {
     if (!connected || activeTab !== 'explore') return;
@@ -189,8 +187,8 @@ const NSEDashboard: React.FC = () => {
     const view = new URLSearchParams(location.search).get('view') || 'existing';
     if (activeTab === 'sips' && view && ["stp-upcoming","stp-cancellations","swp-upcoming","swp-cancellations","swp-redemptions","swp-nondemat-payouts","swp-payouts","swps","stps","xsip-topups","amc-pauses","stepups","xsip-stepups","topups","existing","xsips","upcoming","xsip-upcoming","cancellations","xsip-cancellations","session"].includes(view)) setSipTab(view);
   }, [location.search, activeTab]);
-  const changePlanView = (view: string) => { setSipTab(view); navigate({ pathname: '/mutual-funds/' + SECTION_PATHS.sips, search: '?view=' + encodeURIComponent(view) }); };
-  const selectTab = (tab: Tab) => { const path = '/mutual-funds/' + SECTION_PATHS[tab]; if (location.pathname !== path) navigate(path); setSidebarOpen(false); };
+  const changePlanView = (view: string) => { setSipTab(view); navigate({ pathname: '/nse-dashboard/' + SECTION_PATHS.sips, search: '?view=' + encodeURIComponent(view) }); };
+  const selectTab = (tab: Tab) => { const path = '/nse-dashboard/' + SECTION_PATHS[tab]; if (location.pathname !== path) navigate(path); setSidebarOpen(false); };
   const active = NAVIGATION.find(item => item.id === activeTab)!;
   const ActiveIcon = active.icon;
   const resetFilters = () => { setSearch(''); setCategory('All categories'); setPlan('All plans'); setPurchase('all'); setPurchaseSort('default'); setPage(1); };
@@ -246,7 +244,7 @@ const NSEDashboard: React.FC = () => {
 
       </nav>
       <div className="border-t border-white/10 px-3 py-5">
-        <NSEButton onClick={() => { clearNSEToken(); navigate('/mf-login', { replace: true }); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-300 hover:bg-rose-500/15 hover:text-rose-300">
+        <NSEButton onClick={() => { clearNSEToken(); navigate('/nse-login', { replace: true }); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-300 hover:bg-rose-500/15 hover:text-rose-300">
           <LogOut className="h-5 w-5" /> Logout
         </NSEButton>
       </div>
@@ -263,7 +261,7 @@ const NSEDashboard: React.FC = () => {
       <div className="flex min-w-0 flex-1 flex-col lg:ml-64">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-gray-200 bg-white px-4 sm:px-6">
           <NSEButton aria-label="Open navigation" onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 text-gray-600 lg:hidden"><Menu className="h-5 w-5" /></NSEButton>
-          <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Mutual funds</p><p className="truncate text-sm font-semibold text-slate-800">{active.label}</p></div><div className="ml-auto">{activeTab === 'clients' && <NSEButton onClick={() => setRegisterInvestorOpen(true)} className="rounded-lg bg-[#102B78] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1B3F96]">Register Mutual funds investor</NSEButton>}</div>
+          <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Mutual funds</p><p className="truncate text-sm font-semibold text-slate-800">{active.label}</p></div><div className="ml-auto">{activeTab === 'clients' && <NSEButton onClick={() => navigate('/investor-registration')} className="rounded-lg bg-[#102B78] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1B3F96]">Register Mutual funds investor</NSEButton>}</div>
         </header>
         <section className="border-b border-slate-200 bg-white px-4 py-6 text-slate-900 sm:px-6">
           <NSEHeading as="h1" className="text-2xl font-bold sm:text-3xl"><ActiveIcon aria-hidden="true" className="h-6 w-6" />{active.label}</NSEHeading><p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">{active.description}</p>
@@ -272,7 +270,7 @@ const NSEDashboard: React.FC = () => {
           {activeTab === 'admin' || activeTab === 'clients' ? <>
             <NSEWorkspaceSection section={activeTab} onAction={action => {
               const actions: Record<string, () => void> = {
-                register: () => setRegisterInvestorOpen(true), profiles: () => setClientDetailOpen(true), authorization: () => setAuthorizationOpen(true), kyc: () => setKycOpen(true), aof: () => setAofOpen(true), elog: () => setElogOpen(true),
+                register: () => navigate('/investor-registration'), profiles: () => setClientDetailOpen(true), authorization: () => setAuthorizationOpen(true), kyc: () => setKycOpen(true), aof: () => setAofOpen(true), elog: () => setElogOpen(true),
                 ekyc: () => setEkycOpen(true), nominees: () => setNftOpen(true), bank: () => setBankUpdateOpen(true), cheque: () => setChequeOpen(true),
                 poa: () => setPoaOpen(true), secret: () => setSecretOpen(true), fatca: () => setFatcaRegistrationOpen(true),
               };
@@ -317,7 +315,7 @@ const NSEDashboard: React.FC = () => {
               <label className="text-xs font-semibold text-slate-600">Sort by minimum investment<select aria-label="Sort by minimum purchase" value={purchaseSort} onChange={event => setPurchaseSort(event.target.value)} className="mt-2 w-full font-normal text-slate-900 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm"><option value="default">Default order</option><option value="high-to-low">Minimum purchase: High to low</option><option value="low-to-high">Minimum purchase: Low to high</option></select></label>
               </div></section>
             {catalogLoading && <p role="status" className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-[#102B78]">Loading Mutual funds…</p>}
-            {catalogError && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800"><p>{catalogError}</p>{catalogMemberAuthError ? <><p className="mt-2">The API provider rejected upstream Mutual funds authentication while downloading the scheme master (HTTP 403). A new dashboard login will not update its Mutual funds member credentials. The provider must check its API secret, member authentication settings and environment. If the API secret was changed, update it in the provider backend.</p><NSEButton onClick={() => setCatalogVersion(value => value + 1)} className="mt-3 font-semibold underline">Retry after provider credentials are updated</NSEButton></> : catalogAuthError ? <><p className="mt-2">Mutual funds rejected authentication while loading the scheme master. Sign in again. If this continues after a new login, the API provider needs to check the member credentials and API secret used upstream.</p><NSEButton onClick={() => { clearNSEToken(); navigate('/mf-login', { replace: true }); }} className="mt-3 font-semibold underline">Sign in to Mutual funds again</NSEButton></> : <NSEButton onClick={() => setCatalogVersion(value => value + 1)} className="mt-3 font-semibold underline">Retry loading funds</NSEButton>}</div>}
+            {catalogError && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800"><p>{catalogError}</p>{catalogMemberAuthError ? <><p className="mt-2">The API provider rejected upstream Mutual funds authentication while downloading the scheme master (HTTP 403). A new dashboard login will not update its Mutual funds member credentials. The provider must check its API secret, member authentication settings and environment. If the API secret was changed, update it in the provider backend.</p><NSEButton onClick={() => setCatalogVersion(value => value + 1)} className="mt-3 font-semibold underline">Retry after provider credentials are updated</NSEButton></> : catalogAuthError ? <><p className="mt-2">Mutual funds rejected authentication while loading the scheme master. Sign in again. If this continues after a new login, the API provider needs to check the member credentials and API secret used upstream.</p><NSEButton onClick={() => { clearNSEToken(); navigate('/nse-login', { replace: true }); }} className="mt-3 font-semibold underline">Sign in to Mutual funds again</NSEButton></> : <NSEButton onClick={() => setCatalogVersion(value => value + 1)} className="mt-3 font-semibold underline">Retry loading funds</NSEButton>}</div>}
             {!catalogLoading && !catalogError && <p aria-live="polite" className="text-sm text-gray-500">{filteredFunds.length.toLocaleString('en-IN')} schemes · Page {currentPage} of {totalPages}</p>}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {pagedFunds.map(fund => <article key={fund.id} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -397,7 +395,6 @@ const NSEDashboard: React.FC = () => {
       {fatcaOpen && <NSEFatcaReport onClose={() => setFatcaOpen(false)} />}
       {clientDetailOpen && <NSEClientDetail onClose={() => setClientDetailOpen(false)} />}
       {authorizationOpen && <NSEClientAuthorization onClose={() => setAuthorizationOpen(false)} />}
-      {registerInvestorOpen && <NSEUccRegistration onClose={() => setRegisterInvestorOpen(false)} onViewReport={() => { setRegisterInvestorOpen(false); setClientDetailOpen(true); }} />}
       {switchFund && <NSESwitchFlow scheme={{ name: switchFund.name, code: switchFund.schemeCode, amc: switchFund.amc }} targets={funds.filter(item => item.amc === switchFund.amc && item.active && item.switchAllowed).map(item => ({ name: item.name, code: item.schemeCode, amc: item.amc }))} onClose={() => setSwitchFund(null)} onRecord={recordOrder} onTrack={() => { setSwitchFund(null); selectTab('orders'); }} />}
       {xsipFund && <NSEXsipFlow fund={xsipFund} onClose={() => setXsipFund(null)} onRecord={recordOrder} onTrack={() => { setXsipFund(null); changePlanView('session'); }} />}
       {selectedFund && <NSEInvestmentFlow

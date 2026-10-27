@@ -26,6 +26,12 @@ export default defineConfig(({ mode }) => {
           secure: true,
           rewrite: (path) => path.replace(/^\/nse-api/, '/api/v1'),
         },
+        // Public scheme catalogue — served by the Express server (no NSE token in browser)
+        '/nse-api/public': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+        },
         '/bse-api': {
           target: 'https://starmfv2demo.bseindia.com',
           changeOrigin: true,

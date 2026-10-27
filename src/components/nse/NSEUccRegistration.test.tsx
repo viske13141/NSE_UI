@@ -22,6 +22,17 @@ it('offers the documented client master choices and retains their exact codes', 
   expect(within(screen.getByLabelText('Relationship to investor')).getByRole('option', { name: 'Spouse' })).toHaveValue('20');
   expect(screen.queryByText(/options pending/)).not.toBeInTheDocument();
 });
+it('renders the existing registration form as a page without changing its fields', () => {
+  const onClose = vi.fn();
+  render(<NSEUccRegistration presentation="page" onClose={onClose} />);
+  expect(screen.getByRole('heading', { name: 'Register Mutual funds investor', level: 1 })).toBeInTheDocument();
+  expect(screen.getByText('Enter the investor details. Fields marked * are required.')).toBeInTheDocument();
+  expect(screen.getByLabelText('Client code')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Back to dashboard' })).toBeInTheDocument();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Back to dashboard' }));
+  expect(onClose).toHaveBeenCalledOnce();
+});
 it('blocks empty details and cannot bypass validation by jumping to nomination', () => {
   render(<NSEUccRegistration onClose={() => {}} />);
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));

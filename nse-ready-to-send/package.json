@@ -1,0 +1,10 @@
+{
+  "name": "nse-ready-to-send",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "setup": "npm ci --prefix server",
+    "dev": "node server/index.js",
+    "start": "node server/index.js"
+  }
+}

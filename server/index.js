@@ -8,6 +8,7 @@ const bseAuthRoutes    = require('./src/routes/bseAuthRoutes');
 const bseWebhookRoutes = require('./src/routes/bseWebhookRoutes');
 const errorHandler     = require('./src/middleware/errorHandler');
 const nseRoutes        = require('./src/routes/nseRoutes');
+const nsePublicRoutes  = require('./src/routes/nsePublicRoutes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 
 // Routes
 app.use('/nse-api', nseRoutes);
+app.use('/nse-api/public', nsePublicRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/iw-api',  iwRoutes);
 app.use('/starmf-api', starmfRoutes);

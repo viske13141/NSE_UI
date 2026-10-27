@@ -1,9 +1,0 @@
-node_modules/
-server/node_modules/
-dist/
-.env
-server/.env
-share/
-.swc-cache/
-coverage/
-*.log
